@@ -20,6 +20,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from xdcc_dl.entities import IrcServer, XDCCPack
+from xdcc_dl.xdcc import download_packs
 
 # Global variables.
 # Selenium Chrome options to lessen the memory usage.
@@ -147,66 +149,6 @@ class Animesources:
                 Animesources().Tokyoinsider().tokyoinsider_search(search_term, choice)
             else:
                 Animesources().Nyaa().nyaa_search(search_term)
-############################################################################
-    class Kayoanime:
-        def kayoanime_search(self,search_term):
-            source = "kayoanime"
-            label = "next_only"
-            choice = 0
-            web_url = f"https://kayoanime.com/?s={search_term}"
-            try:
-                # Sending request to the webpage.
-                driver.get(web_url)
-                # Getting html page with BeautifulSoup module
-                while True:
-                    soup = BeautifulSoup(driver.page_source, "html.parser")
-                    # Finding all the mentioned elements from webpage.
-                    html_tag = soup.find("div", class_="container-wrapper").find_all("a", class_="post-thumb", attrs={"aria-label" : True})
-                    index_list = []
-                    name_list = []
-                    link_list = []
-                    index_list.append(0)
-                    name_list.append("Next Page")
-                    link_list.append("")
-                    for i, links in enumerate(html_tag, start=1):
-                        index_list.append(i)
-                        name_list.append(links["aria-label"].strip())
-                        link_list.append(links["href"])
-                    print("\n")
-                    for i, names in zip(index_list, name_list):
-                        print(f"{i}. {names}")
-                    data = Animesources().user_choice(name_list, link_list, index_list, label)
-                    url = data[0]
-                    name = data[1]
-                    if name == "Next Page":
-                        if Animesources().exists(element = ".container-wrapper.show-more-button.load-more-button.infinite-scroll-archives") == True:
-                            WebDriverWait(driver,1).until(EC.element_to_be_clickable((By.CSS_SELECTOR,".container-wrapper.show-more-button.load-more-button.infinite-scroll-archives"))).click()
-                        elem = driver.find_element(By.TAG_NAME, "html")
-                        elem.send_keys(Keys.END)
-                        time.sleep(2)
-                    else:
-                        break
-                # Sending get request to the "manga_link" website.
-                driver.get(url)
-                # Parsering the response with "BeauitifulSoup".
-                soup = BeautifulSoup(driver.page_source, "html.parser")
-                # Finding all the "a" elements in the webpage.
-                html_tag = soup.find("a", target="_blank")
-                url = html_tag["href"].split("?")[0]
-                gdown.download_folder(url)
-                Animesources().retry(source, search_term, choice)
-            except SessionNotCreatedException:
-                print("\nIf you are not using android then install from win_linux_requirement.txt file")
-            except (requests.exceptions.RequestException, WebDriverException, TimeoutException):
-                print("\nNetwork Error!")
-            except TypeError as e:
-                print("\n", e)
-            except (IndexError, AttributeError, UnboundLocalError):
-                print("\nCould not find any thing :(") 
-            except (RuntimeError, gdown.exceptions.FileURLRetrievalError, gdown.exceptions.FolderContentsMaximumLimitError, PermissionError):
-                print("\nGoogle file is either private or unavilable")
-            except KeyboardInterrupt:
-                print("\n\nCancelled by user.")
 ############################################################################
     class Tokyoinsider:
         def tokyoinsider_search(self, search_term, choice):
@@ -409,6 +351,66 @@ class Animesources:
                 print("\n", e)
             except (IndexError, AttributeError, UnboundLocalError):
                 print("\nCould not find any thing :(") 
+            except KeyboardInterrupt:
+                print("\n\nCancelled by user.")
+############################################################################
+    class Kayoanime:
+        def kayoanime_search(self,search_term):
+            source = "kayoanime"
+            label = "next_only"
+            choice = 0
+            web_url = f"https://kayoanime.com/?s={search_term}"
+            try:
+                # Sending request to the webpage.
+                driver.get(web_url)
+                # Getting html page with BeautifulSoup module
+                while True:
+                    soup = BeautifulSoup(driver.page_source, "html.parser")
+                    # Finding all the mentioned elements from webpage.
+                    html_tag = soup.find("div", class_="container-wrapper").find_all("a", class_="post-thumb", attrs={"aria-label" : True})
+                    index_list = []
+                    name_list = []
+                    link_list = []
+                    index_list.append(0)
+                    name_list.append("Next Page")
+                    link_list.append("")
+                    for i, links in enumerate(html_tag, start=1):
+                        index_list.append(i)
+                        name_list.append(links["aria-label"].strip())
+                        link_list.append(links["href"])
+                    print("\n")
+                    for i, names in zip(index_list, name_list):
+                        print(f"{i}. {names}")
+                    data = Animesources().user_choice(name_list, link_list, index_list, label)
+                    url = data[0]
+                    name = data[1]
+                    if name == "Next Page":
+                        if Animesources().exists(element = ".container-wrapper.show-more-button.load-more-button.infinite-scroll-archives") == True:
+                            WebDriverWait(driver,1).until(EC.element_to_be_clickable((By.CSS_SELECTOR,".container-wrapper.show-more-button.load-more-button.infinite-scroll-archives"))).click()
+                        elem = driver.find_element(By.TAG_NAME, "html")
+                        elem.send_keys(Keys.END)
+                        time.sleep(2)
+                    else:
+                        break
+                # Sending get request to the "manga_link" website.
+                driver.get(url)
+                # Parsering the response with "BeauitifulSoup".
+                soup = BeautifulSoup(driver.page_source, "html.parser")
+                # Finding all the "a" elements in the webpage.
+                html_tag = soup.find("a", target="_blank")
+                url = html_tag["href"].split("?")[0]
+                gdown.download_folder(url)
+                Animesources().retry(source, search_term, choice)
+            except SessionNotCreatedException:
+                print("\nIf you are not using android then install from win_linux_requirement.txt file")
+            except (requests.exceptions.RequestException, WebDriverException, TimeoutException):
+                print("\nNetwork Error!")
+            except TypeError as e:
+                print("\n", e)
+            except (IndexError, AttributeError, UnboundLocalError):
+                print("\nCould not find any thing :(") 
+            except (RuntimeError, gdown.exceptions.FileURLRetrievalError, gdown.exceptions.FolderContentsMaximumLimitError, PermissionError):
+                print("\nGoogle file is either private or unavilable")
             except KeyboardInterrupt:
                 print("\n\nCancelled by user.")
 ############################################################################

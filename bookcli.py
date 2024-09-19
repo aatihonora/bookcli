@@ -23,7 +23,7 @@ def questions():
     type = questionary.select("Select item", choices=["Anime", "Book", "Manga", "Music", "TV/Movie", "Exit"]).ask()
     if type == "Anime":
         search_term = input("Enter the title of the Anime: ")
-        select = questionary.select("Select item", choices=["TokyoInsider", "Nyaa", "Kayoanime", "Reset"]).ask()
+        select = questionary.select("Select item", choices=["TokyoInsider", "Nyaa", "Kayoanime", "Nibl", "Reset"]).ask()
         if select == "TokyoInsider":
             sub_select = questionary.select("Select item", choices=["Completed", "Still Airing"]).ask()
             if sub_select == "Completed":
@@ -36,6 +36,8 @@ def questions():
             anime.Nyaa().nyaa_search(search_term)
         elif select == "Kayoanime":
             anime.Kayoanime().kayoanime_search(search_term)
+        elif select == "Nibl":
+            anime.Nibl().nibl(search_term)
         else:
             questions()
     elif type == "Book":
